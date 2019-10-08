@@ -19,12 +19,11 @@ const USAGE: &str = "
 jenkins_metrics - Print basic jenkins build job metrics.
 
 Usage:
-  jenkins_metrics [options] [(--hours=D | --days=D | --weeks=D)] <metrics>
+  jenkins_metrics [options] [(--days=D | --weeks=D)] <metrics>
   jenkins_metrics (-h | --help)
 
 Options:
   --filter=F                        simple prefix filter for build names
-  --months=D                        data set range in months from today
   --weeks=D                         data set range in weeks from today
   --days=D                          data set range in days from today
   --sample-size=S                   Sub sample size in days

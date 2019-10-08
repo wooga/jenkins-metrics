@@ -8,7 +8,6 @@ pub struct Options {
     arg_metrics: PathBuf,
     flag_sample_size: Option<i64>,
     flag_filter: Option<String>,
-    flag_years: Option<i64>,
     flag_weeks: Option<i64>,
     flag_days: Option<i64>,
     flag_verbose: bool,
