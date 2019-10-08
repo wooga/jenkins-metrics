@@ -2,17 +2,17 @@ use chrono::{DateTime, Utc};
 
 use humantime::format_duration as f_duration;
 use log::*;
-use prettytable::{cell, row, Table};
+use prettytable::{cell, row, Table, format};
 
+use jenkins_metrics::cli::Options;
+use jenkins_metrics::report::Report;
+use jenkins_metrics::ReportSample;
 use serde_json::from_reader;
 use std::cmp::Ordering::Less;
 use std::fs::File;
 use std::io;
 use std::iter::IntoIterator;
 use std::path::Path;
-use jenkins_metrics::cli::Options;
-use jenkins_metrics::report::Report;
-use jenkins_metrics::ReportSample;
 use std::time::Duration;
 
 const USAGE: &str = "
@@ -33,7 +33,7 @@ Options:
   -h, --help                        show this help message and exit
 ";
 
-fn load_reports<P: AsRef<Path>>(path:P) -> io::Result<Vec<Report>>{
+fn load_reports<P: AsRef<Path>>(path: P) -> io::Result<Vec<Report>> {
     let json_file = File::open(path)?;
     let reports: Vec<Report> = from_reader(json_file)?;
     Ok(reports)
@@ -96,7 +96,19 @@ fn main() -> io::Result<()> {
     let iterator = ReportSample::new(reports, now, sample_size);
     let mut table = Table::new();
 
-    table.add_row(row![
+    let format = format::FormatBuilder::new()
+        .column_separator('|')
+        .borders('|')
+        .separators(
+            &[format::LinePosition::Title],
+            format::LineSeparator::new('-', '|', '|', '|'),
+        )
+        .padding(1, 1)
+        .build();
+
+    table.set_format(format);
+
+    table.set_titles(row![
         "Sample",
         "Duration",
         "Duration (median)",
