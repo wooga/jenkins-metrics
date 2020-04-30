@@ -5,7 +5,7 @@ def items = Hudson.instance.allItems
 def reports = items.collect { item ->
   if (item instanceof Job) {
     def date = new Date()
-    def builds = item.getBuilds().limit(1000)
+    def builds = item.getBuilds().limit(200)
     return builds.collect { build ->
       if(!build.isBuilding()) {
         def timings = build.getAction(jenkins.metrics.impl.TimeInQueueAction.class)
