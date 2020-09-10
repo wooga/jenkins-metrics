@@ -9,8 +9,11 @@ pub struct Options {
     flag_sample_size: Option<i64>,
     flag_filter: Option<String>,
     flag_weeks: Option<i64>,
+    flag_hours: Option<i64>,
     flag_days: Option<i64>,
     flag_verbose: bool,
+    flag_now: bool,
+    flag_today: bool,
     flag_debug: bool,
     flag_color: ColorOption,
 }
@@ -25,6 +28,8 @@ impl Options {
             CDuration::days(days)
         } else if let Some(weeks) = self.flag_weeks {
             CDuration::weeks(weeks)
+        } else if let Some(hours) = self.flag_hours {
+            CDuration::hours(hours)
         } else {
             CDuration::weeks(8)
         }
@@ -36,6 +41,14 @@ impl Options {
 
     pub fn filter(&self) -> Option<&String> {
         self.flag_filter.as_ref()
+    }
+
+    pub fn now(&self) -> bool {
+        self.flag_now
+    }
+
+    pub fn today(&self) -> bool {
+        self.flag_today
     }
 }
 

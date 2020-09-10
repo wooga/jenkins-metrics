@@ -49,7 +49,10 @@ Options:
   --months=D                        data set range in months from today
   --weeks=D                         data set range in weeks from today
   --days=D                          data set range in days from today
+  --hours=H                         data set range in hours from today
   --sample-size=S                   Sub sample size in days
+  --now                             Use current UTC time as base
+  --today                           Include todays date
   -v, --verbose                     print more output
   -d, --debug                       print debug output
   --color WHEN                      Coloring: auto, always, never [default: auto]

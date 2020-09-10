@@ -14,19 +14,23 @@ use std::io;
 use std::iter::IntoIterator;
 use std::path::Path;
 use std::time::Duration;
+use chrono::Duration as CDuration;
 
 const USAGE: &str = "
 jenkins_metrics - Print basic jenkins build job metrics.
 
 Usage:
-  jenkins_metrics [options] [(--days=D | --weeks=D)] <metrics>
+  jenkins_metrics [options] [(--days=D | --weeks=D | --hours=H)] [(--now | --today)] <metrics>
   jenkins_metrics (-h | --help)
 
 Options:
   --filter=F                        simple prefix filter for build names
   --weeks=D                         data set range in weeks from today
   --days=D                          data set range in days from today
+  --hours=H                         data set range in hours from today
   --sample-size=S                   Sub sample size in days
+  --now                             Use current UTC time as base
+  --today                           Include todays date
   -v, --verbose                     print more output
   -d, --debug                       print debug output
   --color WHEN                      Coloring: auto, always, never [default: auto]
@@ -45,8 +49,17 @@ fn main() -> io::Result<()> {
 
     let mut reports = load_reports(options.metrics())?;
 
-    let now = Utc::now().date().and_hms(0, 0, 0);
+    let now = if options.now() {
+        Utc::now()
+    }else if options.today() {
+        (Utc::now() + CDuration::days(1)).date().and_hms(0,0,0)
+    } else {
+        Utc::now().date().and_hms(0,0,0)
+    };
+
     let min_date: DateTime<Utc> = now - options.duration();
+
+    debug!("from: {:?} to: {:?}", min_date, now);
 
     reports
         .as_mut_slice()
