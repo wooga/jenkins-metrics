@@ -5,7 +5,7 @@ use std::path::PathBuf;
 
 #[derive(Debug, Deserialize)]
 pub struct Options {
-    arg_metrics: PathBuf,
+    arg_metrics: Vec<PathBuf>,
     flag_sample_size: Option<i64>,
     flag_filter: Option<String>,
     flag_weeks: Option<i64>,
@@ -19,8 +19,8 @@ pub struct Options {
 }
 
 impl Options {
-    pub fn metrics(&self) -> &PathBuf {
-        &self.arg_metrics
+    pub fn metrics(&self) -> &[PathBuf] {
+        self.arg_metrics.as_slice()
     }
 
     pub fn duration(&self) -> CDuration {

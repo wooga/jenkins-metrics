@@ -2,25 +2,26 @@ use chrono::{DateTime, Utc};
 
 use humantime::format_duration as f_duration;
 use log::*;
-use prettytable::{cell, row, Table, format};
+use prettytable::{cell, format, row, Table};
 
+use chrono::Duration as CDuration;
 use jenkins_metrics::cli::Options;
 use jenkins_metrics::report::Report;
 use jenkins_metrics::ReportSample;
 use serde_json::from_reader;
 use std::cmp::Ordering::Less;
+use std::collections::HashSet;
 use std::fs::File;
 use std::io;
 use std::iter::IntoIterator;
 use std::path::Path;
 use std::time::Duration;
-use chrono::Duration as CDuration;
 
 const USAGE: &str = "
 jenkins_metrics - Print basic jenkins build job metrics.
 
 Usage:
-  jenkins_metrics [options] [(--days=D | --weeks=D | --hours=H)] [(--now | --today)] <metrics>
+  jenkins_metrics [options] [(--days=D | --weeks=D | --hours=H)] [(--now | --today)] <metrics>...
   jenkins_metrics (-h | --help)
 
 Options:
@@ -37,10 +38,17 @@ Options:
   -h, --help                        show this help message and exit
 ";
 
-fn load_reports<P: AsRef<Path>>(path: P) -> io::Result<Vec<Report>> {
-    let json_file = File::open(path)?;
-    let reports: Vec<Report> = from_reader(json_file)?;
-    Ok(reports)
+fn load_reports<P: AsRef<Path>>(paths: &[P]) -> io::Result<Vec<Report>> {
+    let mut final_reports = HashSet::new();
+    for path in paths {
+        let json_file = File::open(path)?;
+        let reports: Vec<Report> = from_reader(json_file)?;
+        for r in reports {
+            final_reports.insert(r);
+        }
+    }
+
+    Ok(final_reports.into_iter().collect())
 }
 
 fn main() -> io::Result<()> {
@@ -51,10 +59,10 @@ fn main() -> io::Result<()> {
 
     let now = if options.now() {
         Utc::now()
-    }else if options.today() {
-        (Utc::now() + CDuration::days(1)).date().and_hms(0,0,0)
+    } else if options.today() {
+        (Utc::now() + CDuration::days(1)).date().and_hms(0, 0, 0)
     } else {
-        Utc::now().date().and_hms(0,0,0)
+        Utc::now().date().and_hms(0, 0, 0)
     };
 
     let min_date: DateTime<Utc> = now - options.duration();

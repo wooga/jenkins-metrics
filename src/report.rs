@@ -1,8 +1,9 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Deserializer};
 use std::time::Duration;
+use ordered_float::OrderedFloat;
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Hash, Eq, PartialEq)]
 pub struct QueuingDetails {
     #[serde(deserialize_with = "deserialize_duration_milis")]
     duration: Duration,
@@ -41,7 +42,16 @@ where
     Ok(duration)
 }
 
-#[derive(Debug, Deserialize)]
+fn deserialize_ordered_float<'de, D>(deserializer: D) -> Result<OrderedFloat<f64>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let value: f64 = f64::deserialize(deserializer)?;
+    let ordered: OrderedFloat<f64> = OrderedFloat::from(value);
+    Ok(ordered)
+}
+
+#[derive(Debug, Deserialize, Hash, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Report {
     build: String,
@@ -50,7 +60,8 @@ pub struct Report {
     duration: Duration,
     #[serde(deserialize_with = "deserialize_duration_milis")]
     executing: Duration,
-    executor_utilization: f64,
+    #[serde(deserialize_with = "deserialize_ordered_float")]
+    executor_utilization: OrderedFloat<f64>,
     queuing: QueuingDetails,
 }
 
@@ -77,6 +88,12 @@ impl Report {
     }
 
     pub fn executor_utilization(&self) -> f64 {
-        self.executor_utilization
+        *self.executor_utilization
+    }
+}
+
+impl PartialEq for Report {
+    fn eq(&self, other: &Self) -> bool {
+        self.build() == other.build()
     }
 }
