@@ -1,7 +1,8 @@
+use std::hash::{Hash, Hasher};
 use chrono::{DateTime, Utc};
+use ordered_float::OrderedFloat;
 use serde::{Deserialize, Deserializer};
 use std::time::Duration;
-use ordered_float::OrderedFloat;
 
 #[derive(Debug, Deserialize, Hash, Eq, PartialEq)]
 pub struct QueuingDetails {
@@ -51,11 +52,43 @@ where
     Ok(ordered)
 }
 
-#[derive(Debug, Deserialize, Hash, Eq)]
+#[derive(Debug, Deserialize, Hash, Eq, Ord, PartialEq, PartialOrd)]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum BuildResult {
+    Unknown,
+    Aborted,
+    Failure,
+    NotBuild,
+    Success,
+    Unstable,
+}
+
+impl Default for BuildResult {
+    fn default() -> Self {
+        BuildResult::Unknown
+    }
+}
+
+impl std::fmt::Display for BuildResult {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BuildResult::Unknown => write!(f, "unknown"),
+            BuildResult::Aborted => write!(f, "aborted"),
+            BuildResult::Failure => write!(f, "failure"),
+            BuildResult::NotBuild => write!(f, "not_build"),
+            BuildResult::Success => write!(f, "success"),
+            BuildResult::Unstable => write!(f, "unstable"),
+        }
+    }
+}
+
+#[derive(Debug, Deserialize, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct Report {
     build: String,
     time: DateTime<Utc>,
+    #[serde(default)]
+    result: BuildResult,
     #[serde(deserialize_with = "deserialize_duration_milis")]
     duration: Duration,
     #[serde(deserialize_with = "deserialize_duration_milis")]
@@ -66,7 +99,6 @@ pub struct Report {
 }
 
 impl Report {
-
     pub fn build(&self) -> &str {
         &self.build
     }
@@ -90,6 +122,10 @@ impl Report {
     pub fn executor_utilization(&self) -> f64 {
         *self.executor_utilization
     }
+
+    pub fn result(&self) -> &BuildResult {
+        &self.result
+    }
 }
 
 impl PartialEq for Report {
@@ -97,3 +133,9 @@ impl PartialEq for Report {
         self.build() == other.build()
     }
 }
+impl Hash for Report {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.build.hash(state);
+    }
+}
+    

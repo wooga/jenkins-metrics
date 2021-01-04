@@ -5,13 +5,14 @@ def items = Hudson.instance.allItems
 def reports = items.collect { item ->
   if (item instanceof Job) {
     def date = new Date()
-    def builds = item.getBuilds().limit(200)
+    def builds = item.getBuilds().limit(10000)
     return builds.collect { build ->
       if(!build.isBuilding()) {
         def timings = build.getAction(jenkins.metrics.impl.TimeInQueueAction.class)
         if(timings) {
           report = [:]
           report['build'] = build.toString()
+          report['result'] = build.result.toString()
           report['time'] = build.getTime()
           report['duration'] = timings.getTotalDurationMillis()
           report['executing'] = timings.getExecutingTimeMillis()

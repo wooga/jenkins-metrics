@@ -78,12 +78,13 @@ fn main() -> io::Result<()> {
         .collect();
 
     let mut table = Table::new();
-    table.set_titles(row!["build", "time", "Duration", "Executing", "Queueing"]);
+    table.set_titles(row!["build", "time", "Result", "Duration", "Executing", "Queueing"]);
 
     for report in reports {
         table.add_row(row![
             format!("{}", report.build()),
             format!("{}", report.time().format("%Y-%m-%d %H:%M:%S").to_string()),
+            format!("{}", report.result()),
             format!("{}", report.duration().as_secs()),
             format!("{}", report.executing().as_secs()),
             format!("{}", report.queuing().duration().as_secs()),
